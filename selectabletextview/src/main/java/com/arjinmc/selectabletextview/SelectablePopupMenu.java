@@ -6,7 +6,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
 /**
@@ -21,19 +20,15 @@ public class SelectablePopupMenu extends AbstractSelectablePopupMenu implements 
 
     private TextView mTvCopy, mTvAll;
     private OnMenuOptionClickListener mOnMenuOptionClickListener;
-    private SelectableTextView mSelectableTextView;
+
 
     private Context mContext;
     private int mWidth, mHeight;
+    private boolean isCanceled = true;
 
     public SelectablePopupMenu(Context context) {
         init(context);
 
-    }
-
-    public SelectablePopupMenu(Context context, SelectableTextView selectableTextView) {
-        init(context);
-        mSelectableTextView = selectableTextView;
     }
 
     private void init(Context context) {
@@ -53,64 +48,70 @@ public class SelectablePopupMenu extends AbstractSelectablePopupMenu implements 
         setHeight(mHeight);
     }
 
-    public void setSelectableTextView(SelectableTextView selectableTextView) {
-        mSelectableTextView = selectableTextView;
-    }
-
     @Override
     public void onClick(View v) {
 
         if (mOnMenuOptionClickListener == null) {
+            dismiss();
             return;
         }
 
         if (v.getId() == R.id.selectabletextview_tv_copy) {
+            isCanceled = false;
             mOnMenuOptionClickListener.onCopy();
         } else if (v.getId() == R.id.selectabletextview_tv_all) {
-            mOnMenuOptionClickListener.onAll();
+            isCanceled = false;
+            mOnMenuOptionClickListener.onSelectAll();
         }
+        dismiss();
     }
 
     @Override
-    public void dismiss() {
-        super.dismiss();
-        if (mSelectableTextView != null) {
-            mSelectableTextView.cancelSelected();
-        }
-    }
-
-    @Override
-    public void show(int touchX, int touchY) {
-        if (mSelectableTextView == null) {
+    public void show(SelectableTextView selectableTextView, int touchX, int touchY) {
+        if (selectableTextView == null) {
             return;
         }
+        Log.e("touch", touchX + "," + touchY);
+        Log.e("self", mWidth + "," + mHeight);
         int locationX = 0, locationY = 0;
 
         //calculate the locationX
-        if (mSelectableTextView.getMeasuredWidth() - touchX < mWidth / 2) {
-            locationX = mSelectableTextView.getMeasuredWidth() - mWidth;
-        } else if (locationX < mWidth / 2) {
+        if (selectableTextView.getMeasuredWidth() - touchX < mWidth / 2) {
+            locationX = selectableTextView.getMeasuredWidth() - mWidth;
+        } else if (touchX < mWidth / 2) {
             locationX = 0;
         } else {
-            locationX = touchX - mWidth / 2;
+            //not very good need optimize
+            locationX = touchX;
         }
 
         //calculate the locationY
         int[] parentScreenLocation = new int[2];
-        mSelectableTextView.getLocationOnScreen(parentScreenLocation);
+        selectableTextView.getLocationOnScreen(parentScreenLocation);
 
-        Log.e("show",locationX+","+locationY);
+        Log.e("show", locationX + "," + locationY);
 
-        showAtLocation(mSelectableTextView, Gravity.NO_GRAVITY, locationX, locationY);
+        showAtLocation(selectableTextView, Gravity.NO_GRAVITY, locationX, locationY);
     }
 
     public void setOnMenuOptionClickListener(OnMenuOptionClickListener onMenuOptionClickListener) {
         mOnMenuOptionClickListener = onMenuOptionClickListener;
     }
 
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        if (isCanceled && mOnMenuOptionClickListener != null) {
+            mOnMenuOptionClickListener.onCancel();
+        }
+        isCanceled = true;
+    }
+
     public interface OnMenuOptionClickListener {
         void onCopy();
 
-        void onAll();
+        void onSelectAll();
+
+        void onCancel();
     }
 }

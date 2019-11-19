@@ -9,11 +9,12 @@ import android.widget.PopupWindow;
  */
 public abstract class AbstractSelectablePopupMenu extends PopupWindow {
 
-    public void show(int touchX, int touchY) {
-        try {
-            throw new Exception("You should override this method");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    /**
+     * show at the right position for popup menu
+     *
+     * @param selectableTextView
+     * @param touchX
+     * @param touchY
+     */
+    abstract void show(SelectableTextView selectableTextView, int touchX, int touchY);
 }

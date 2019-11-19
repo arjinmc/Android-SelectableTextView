@@ -11,6 +11,7 @@ import android.text.style.BackgroundColorSpan;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
@@ -48,6 +49,7 @@ public class SelectableTextView extends TextView implements View.OnLongClickList
      * popup menu
      */
     private AbstractSelectablePopupMenu mSelectablePopupMenu;
+    private PopupWindow.OnDismissListener mSelectablePopupMenuOnDismissListener;
 
     private OnSelectedListener mOnSelectedListener;
 
@@ -78,11 +80,8 @@ public class SelectableTextView extends TextView implements View.OnLongClickList
         setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                mTouchX = (int) event.getX() - getPaddingLeft();
+                mTouchX = (int) event.getX() - getPaddingLeft() - getPaddingRight();
                 mTouchY = (int) event.getY() - getPaddingTop();
-                if (mSelectablePopupMenu != null) {
-                    mSelectablePopupMenu.show(mTouchX, mTouchY);
-                }
                 return false;
             }
         });
@@ -90,6 +89,22 @@ public class SelectableTextView extends TextView implements View.OnLongClickList
 
     public void setSelectablePopupMenu(SelectablePopupMenu selectablePopupMenu) {
         mSelectablePopupMenu = selectablePopupMenu;
+        initSelectablePopupMenuListener();
+    }
+
+    public void initSelectablePopupMenuListener() {
+        if (mSelectablePopupMenu == null) {
+            return;
+        }
+        if (mSelectablePopupMenuOnDismissListener == null) {
+            mSelectablePopupMenuOnDismissListener = new PopupWindow.OnDismissListener() {
+                @Override
+                public void onDismiss() {
+                    cancelSelected();
+                }
+            };
+        }
+        mSelectablePopupMenu.setOnDismissListener(mSelectablePopupMenuOnDismissListener);
     }
 
     public void setSelectedBackgroundColor(@ColorRes int colorRes) {
@@ -162,6 +177,8 @@ public class SelectableTextView extends TextView implements View.OnLongClickList
      * cancel selected state
      */
     public void cancelSelected() {
+        mSelectedStartIndex = 0;
+        mSelectedEndIndex = 0;
         if (isEmpty()) {
             return;
         }
@@ -178,11 +195,20 @@ public class SelectableTextView extends TextView implements View.OnLongClickList
 
         calculateIndex(mTouchX, mTouchY);
         setSelectedBackgroundShown(true);
-        if (mOnSelectedListener != null) {
-            mOnSelectedListener.onSelectedChange("", mSelectedStartIndex, mSelectedEndIndex);
-        }
-
+        dispatchSelected();
         return false;
+    }
+
+    /**
+     * dispatch selected event
+     */
+    public void dispatchSelected() {
+        if (mOnSelectedListener != null) {
+            mOnSelectedListener.onSelectedChange(getSelectedText(), mSelectedStartIndex, mSelectedEndIndex);
+        }
+        if (mSelectablePopupMenu != null) {
+            mSelectablePopupMenu.show(SelectableTextView.this, mTouchX, mTouchY);
+        }
     }
 
     /**
@@ -240,9 +266,6 @@ public class SelectableTextView extends TextView implements View.OnLongClickList
         int start = getPreciseOffset(x, y);
 
         if (start > -1) {
-            if (start >= 1) {
-                start -= 1;
-            }
             int end = start + DEFAULT_SELECTION_LEN;
             if (end >= getText().length()) {
                 end = getText().length() - 1;
@@ -257,14 +280,42 @@ public class SelectableTextView extends TextView implements View.OnLongClickList
         super.onDraw(canvas);
     }
 
+    /**
+     * get selected text
+     *
+     * @return
+     */
+    public String getSelectedText() {
+        String text = getText().toString();
+
+        if (TextUtils.isEmpty(text)) {
+            return null;
+        }
+        if (mSelectedStartIndex == mSelectedEndIndex) {
+            return null;
+        }
+        if (mSelectedStartIndex > mSelectedEndIndex) {
+            int temp = mSelectedStartIndex;
+            mSelectedStartIndex = mSelectedEndIndex;
+            mSelectedEndIndex = temp;
+        }
+        if (mSelectedStartIndex < 0) {
+            mSelectedStartIndex = 0;
+        }
+        int textLength = text.length();
+        if (mSelectedEndIndex > textLength) {
+            mSelectedEndIndex = textLength;
+        }
+        return text.substring(mSelectedStartIndex, mSelectedEndIndex);
+
+    }
+
     public void setOnSelectedListener(OnSelectedListener onSelectedListener) {
         mOnSelectedListener = onSelectedListener;
     }
 
     public interface OnSelectedListener {
-        void onSelectedChange(String selectedText, int startIndex, int endInex);
-
-        void onCancel();
+        void onSelectedChange(String selectedText, int startIndex, int endIndex);
     }
 
 }
