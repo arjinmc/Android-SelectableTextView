@@ -1,7 +1,6 @@
 package com.arjinmc.selectabletextview;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,8 @@ import android.widget.TextView;
  */
 public class SelectablePopupMenu extends AbstractSelectablePopupMenu implements View.OnClickListener {
 
-    private final int DEFAULT_MARGIN_TOP = 20;
+    private final int DEFAULT_MARGIN_TOP = 60;
+    private int mTopOffset = DEFAULT_MARGIN_TOP;
 
     private TextView mTvCopy, mTvAll;
     private OnMenuOptionClickListener mOnMenuOptionClickListener;
@@ -71,26 +71,34 @@ public class SelectablePopupMenu extends AbstractSelectablePopupMenu implements 
         if (selectableTextView == null) {
             return;
         }
-        Log.e("touch", touchX + "," + touchY);
-        Log.e("self", mWidth + "," + mHeight);
         int locationX = 0, locationY = 0;
+        int[] screenLocation = new int[2];
+        selectableTextView.getLocationOnScreen(screenLocation);
 
         //calculate the locationX
-        if (selectableTextView.getMeasuredWidth() - touchX < mWidth / 2) {
-            locationX = selectableTextView.getMeasuredWidth() - mWidth;
+        //check if right edge
+        if (screenLocation[0] + selectableTextView.getMeasuredWidth() - touchX < mWidth / 2) {
+            locationX = screenLocation[0] + selectableTextView.getMeasuredWidth() - mWidth;
+
+            //check if left edge
         } else if (touchX < mWidth / 2) {
-            locationX = 0;
+            locationX = screenLocation[0];
+
+            //others
         } else {
             //not very good need optimize
-            locationX = touchX;
+            locationX = screenLocation[0] + touchX;
+
         }
 
         //calculate the locationY
-        int[] parentScreenLocation = new int[2];
-        selectableTextView.getLocationOnScreen(parentScreenLocation);
-
-        Log.e("show", locationX + "," + locationY);
-
+        //check if need show at down
+        if (screenLocation[1] + touchY < mTopOffset + mHeight) {
+            locationY = screenLocation[1] + mTopOffset + mHeight + selectableTextView.getPaddingTop();
+            //others show at top
+        } else {
+            locationY = screenLocation[1] + touchY + selectableTextView.getPaddingTop() - mTopOffset - mHeight;
+        }
         showAtLocation(selectableTextView, Gravity.NO_GRAVITY, locationX, locationY);
     }
 
