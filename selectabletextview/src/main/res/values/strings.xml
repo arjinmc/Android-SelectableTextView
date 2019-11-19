@@ -1,0 +1,4 @@
+<resources>
+    <string name="selectabletextview_selectable_popup_menu_copy">Copy</string>
+    <string name="selectabletextview_selectable_popup_menu_all">All</string>
+</resources>

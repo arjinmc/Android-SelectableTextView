@@ -1,0 +1,4 @@
+<resources>
+    <string name="selectabletextview_selectable_popup_menu_copy">複製</string>
+    <string name="selectabletextview_selectable_popup_menu_all">全選</string>
+</resources>

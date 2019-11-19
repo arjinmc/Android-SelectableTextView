@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/selectabletextview_bg_popup_menu"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/selectabletextview_tv_copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minWidth="60dp"
+        android:padding="8dp"
+        android:text="@string/selectabletextview_selectable_popup_menu_copy"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
+        android:id="@+id/selectabletextview_tv_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minWidth="60dp"
+        android:padding="8dp"
+        android:text="@string/selectabletextview_selectable_popup_menu_all"
+        android:textColor="@android:color/white" />
+</LinearLayout>
