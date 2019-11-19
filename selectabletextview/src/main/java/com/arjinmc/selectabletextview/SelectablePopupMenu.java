@@ -97,7 +97,7 @@ public class SelectablePopupMenu extends AbstractSelectablePopupMenu implements 
             locationY = screenLocation[1] + mTopOffset + mHeight + selectableTextView.getPaddingTop();
             //others show at top
         } else {
-            locationY = screenLocation[1] + touchY + selectableTextView.getPaddingTop() - mTopOffset - mHeight;
+            locationY = screenLocation[1] + touchY - mTopOffset - mHeight;
         }
         showAtLocation(selectableTextView, Gravity.NO_GRAVITY, locationX, locationY);
     }
